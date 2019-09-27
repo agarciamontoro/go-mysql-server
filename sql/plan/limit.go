@@ -10,11 +10,11 @@ import (
 // Limit is a node that only allows up to N rows to be retrieved.
 type Limit struct {
 	UnaryNode
-	Limit int64
+	Limit int32
 }
 
 // NewLimit creates a new Limit node with the given size.
-func NewLimit(size int64, child sql.Node) *Limit {
+func NewLimit(size int32, child sql.Node) *Limit {
 	return &Limit{
 		UnaryNode: UnaryNode{Child: child},
 		Limit:     size,
@@ -55,7 +55,7 @@ func (l Limit) String() string {
 
 type limitIter struct {
 	l          *Limit
-	currentPos int64
+	currentPos int32
 	childIter  sql.RowIter
 }
 

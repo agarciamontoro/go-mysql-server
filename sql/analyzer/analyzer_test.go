@@ -167,7 +167,7 @@ func TestAnalyzer_Analyze(t *testing.T) {
 	require.NoError(err)
 	require.Equal(expected, analyzed)
 
-	notAnalyzed = plan.NewLimit(int64(1),
+	notAnalyzed = plan.NewLimit(int32(1),
 		plan.NewProject(
 			[]sql.Expression{
 				expression.NewUnresolvedColumn("i"),
@@ -177,7 +177,7 @@ func TestAnalyzer_Analyze(t *testing.T) {
 	)
 	analyzed, err = a.Analyze(sql.NewEmptyContext(), notAnalyzed)
 	expected = plan.NewLimit(
-		int64(1),
+		int32(1),
 		plan.NewResolvedTable(table.WithProjection([]string{"i"})),
 	)
 	require.NoError(err)

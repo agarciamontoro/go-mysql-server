@@ -69,7 +69,7 @@ func parseShowWarnings(ctx *sql.Context, s string) (sql.Node, error) {
 			return nil, errInvalidIndex.New("count", count)
 		}
 		if count > 0 {
-			node = plan.NewLimit(int64(count), node)
+			node = plan.NewLimit(int32(count), node)
 		}
 	}
 

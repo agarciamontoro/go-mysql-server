@@ -338,8 +338,8 @@ func convertSelect(ctx *sql.Context, s *sqlparser.Select) (sql.Node, error) {
 			return nil, err
 		}
 	} else if ok, val := sql.HasDefaultValue(ctx.Session, "sql_select_limit"); !ok {
-		limit := val.(int64)
-		node = plan.NewLimit(int64(limit), node)
+		limit := val.(int32)
+		node = plan.NewLimit(int32(limit), node)
 	}
 
 	return node, nil
@@ -630,7 +630,7 @@ func limitToLimit(
 	limit sqlparser.Expr,
 	child sql.Node,
 ) (*plan.Limit, error) {
-	rowCount, err := getInt64Value(ctx, limit, "LIMIT with non-integer literal")
+	rowCount, err := getInt32Value(ctx, limit, "LIMIT with non-integer literal")
 	if err != nil {
 		return nil, err
 	}
@@ -666,6 +666,38 @@ func offsetToOffset(
 	}
 
 	return plan.NewOffset(o, child), nil
+}
+
+// getInt64Literal returns an int64 *expression.Literal for the value given, or an unsupported error with the string
+// given if the expression doesn't represent an integer literal.
+func getInt32Literal(expr sqlparser.Expr, errStr string) (*expression.Literal, error) {
+	e, err := exprToExpression(expr)
+	if err != nil {
+		return nil, err
+	}
+
+	nl, ok := e.(*expression.Literal)
+	if !ok || nl.Type() != sql.Int32 {
+		return nil, ErrUnsupportedFeature.New(errStr)
+	} else {
+		return nl, nil
+	}
+}
+
+// getInt32Value returns the int32 literal value in the expression given, or an error with the errStr given if it
+// cannot.
+func getInt32Value(ctx *sql.Context, expr sqlparser.Expr, errStr string) (int32, error) {
+	ie, err := getInt32Literal(expr, errStr)
+	if err != nil {
+		return 0, err
+	}
+
+	i, err := ie.Eval(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+
+	return i.(int32), nil
 }
 
 // getInt64Literal returns an int64 *expression.Literal for the value given, or an unsupported error with the string
