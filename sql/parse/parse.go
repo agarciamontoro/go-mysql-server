@@ -656,7 +656,7 @@ func offsetToOffset(
 	offset sqlparser.Expr,
 	child sql.Node,
 ) (*plan.Offset, error) {
-	o, err := getInt64Value(ctx, offset, "OFFSET with non-integer literal")
+	o, err := getInt32Value(ctx, offset, "OFFSET with non-integer literal")
 	if err != nil {
 		return nil, err
 	}
@@ -668,7 +668,7 @@ func offsetToOffset(
 	return plan.NewOffset(o, child), nil
 }
 
-// getInt64Literal returns an int64 *expression.Literal for the value given, or an unsupported error with the string
+// getInt32Literal returns an int32 *expression.Literal for the value given, or an unsupported error with the string
 // given if the expression doesn't represent an integer literal.
 func getInt32Literal(expr sqlparser.Expr, errStr string) (*expression.Literal, error) {
 	e, err := exprToExpression(expr)
@@ -698,38 +698,6 @@ func getInt32Value(ctx *sql.Context, expr sqlparser.Expr, errStr string) (int32,
 	}
 
 	return i.(int32), nil
-}
-
-// getInt64Literal returns an int64 *expression.Literal for the value given, or an unsupported error with the string
-// given if the expression doesn't represent an integer literal.
-func getInt64Literal(expr sqlparser.Expr, errStr string) (*expression.Literal, error) {
-	e, err := exprToExpression(expr)
-	if err != nil {
-		return nil, err
-	}
-
-	nl, ok := e.(*expression.Literal)
-	if !ok || nl.Type() != sql.Int64 {
-		return nil, ErrUnsupportedFeature.New(errStr)
-	} else {
-		return nl, nil
-	}
-}
-
-// getInt64Value returns the int64 literal value in the expression given, or an error with the errStr given if it
-// cannot.
-func getInt64Value(ctx *sql.Context, expr sqlparser.Expr, errStr string) (int64, error) {
-	ie, err := getInt64Literal(expr, errStr)
-	if err != nil {
-		return 0, err
-	}
-
-	i, err := ie.Eval(ctx, nil)
-	if err != nil {
-		return 0, err
-	}
-
-	return i.(int64), nil
 }
 
 func isAggregate(e sql.Expression) bool {

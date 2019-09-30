@@ -8,11 +8,11 @@ import (
 // Offset is a node that skips the first N rows.
 type Offset struct {
 	UnaryNode
-	Offset int64
+	Offset int32
 }
 
 // NewOffset creates a new Offset node.
-func NewOffset(n int64, child sql.Node) *Offset {
+func NewOffset(n int32, child sql.Node) *Offset {
 	return &Offset{
 		UnaryNode: UnaryNode{Child: child},
 		Offset:    n,
@@ -52,7 +52,7 @@ func (o Offset) String() string {
 }
 
 type offsetIter struct {
-	skip      int64
+	skip      int32
 	childIter sql.RowIter
 }
 

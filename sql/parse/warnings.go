@@ -60,7 +60,7 @@ func parseShowWarnings(ctx *sql.Context, s string) (sql.Node, error) {
 			return nil, errInvalidIndex.New("offset", offset)
 		}
 	}
-	node = plan.NewOffset(int64(offset), node)
+	node = plan.NewOffset(int32(offset), node)
 	if cntstr != "" {
 		if count, err = strconv.Atoi(cntstr); err != nil {
 			return nil, err
