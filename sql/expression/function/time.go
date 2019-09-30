@@ -328,7 +328,7 @@ func NewYearWeek(args ...sql.Expression) (sql.Expression, error) {
 	if len(args) > 1 && args[1].Resolved() && sql.IsInteger(args[1].Type()) {
 		yw.mode = args[1]
 	} else {
-		yw.mode = expression.NewLiteral(0, sql.Int64)
+		yw.mode = expression.NewLiteral(0, sql.Int32)
 	}
 	return yw, nil
 }
@@ -357,13 +357,13 @@ func (d *YearWeek) Eval(ctx *sql.Context, row sql.Row) (interface{}, error) {
 		return nil, errors.New("YEARWEEK: invalid day")
 	}
 
-	mode := int64(0)
+	mode := int32(0)
 	val, err := d.mode.Eval(ctx, row)
 	if err != nil {
 		return nil, err
 	}
 	if val != nil {
-		if mode, ok = val.(int64); ok {
+		if mode, ok = val.(int32); ok {
 			mode %= 8 // mode in [0, 7]
 		}
 	}
@@ -391,7 +391,7 @@ func (*YearWeek) WithChildren(children ...sql.Expression) (sql.Expression, error
 }
 
 // Following solution of YearWeek was taken from tidb: https://github.com/pingcap/tidb/blob/master/types/mytime.go
-type weekBehaviour int64
+type weekBehaviour int32
 
 const (
 	// weekBehaviourMondayFirst set Monday as first day of week; otherwise Sunday is first day of week
@@ -408,7 +408,7 @@ func (v weekBehaviour) test(flag weekBehaviour) bool {
 	return (v & flag) != 0
 }
 
-func weekMode(mode int64) weekBehaviour {
+func weekMode(mode int32) weekBehaviour {
 	weekFormat := weekBehaviour(mode & 7)
 	if (weekFormat & weekBehaviourMondayFirst) == 0 {
 		weekFormat ^= weekBehaviourFirstWeekday
