@@ -192,11 +192,11 @@ func convertSet(ctx *sql.Context, n *sqlparser.Set) (sql.Node, error) {
 
 			switch strings.ToLower(val) {
 			case sqlparser.KeywordString(sqlparser.ON):
-				return expression.NewLiteral(int64(1), sql.Int64), nil
+				return expression.NewLiteral(int32(1), sql.Int32), nil
 			case sqlparser.KeywordString(sqlparser.TRUE):
 				return expression.NewLiteral(true, sql.Boolean), nil
 			case sqlparser.KeywordString(sqlparser.OFF):
-				return expression.NewLiteral(int64(0), sql.Int64), nil
+				return expression.NewLiteral(int32(0), sql.Int32), nil
 			case sqlparser.KeywordString(sqlparser.FALSE):
 				return expression.NewLiteral(false, sql.Boolean), nil
 			}
@@ -737,11 +737,11 @@ func selectToProjectOrGroupBy(se sqlparser.SelectExprs, g sqlparser.GroupBy, chi
 			return nil, err
 		}
 
-		agglen := int64(len(selectExprs))
+		agglen := int32(len(selectExprs))
 		for i, ge := range groupingExprs {
 			// if GROUP BY index
 			if l, ok := ge.(*expression.Literal); ok && sql.IsNumber(l.Type()) {
-				if idx, ok := l.Value().(int64); ok && idx > 0 && idx <= agglen {
+				if idx, ok := l.Value().(int32); ok && idx > 0 && idx <= agglen {
 					aggexpr := selectExprs[idx-1]
 					if alias, ok := aggexpr.(*expression.Alias); ok {
 						aggexpr = expression.NewUnresolvedColumn(alias.Name())
