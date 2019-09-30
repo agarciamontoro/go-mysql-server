@@ -582,7 +582,7 @@ var queries = []struct {
 	{
 		`SELECT COALESCE(NULL, NULL, NULL, COALESCE(NULL, 1234567890))`,
 		[]sql.Row{
-			{int64(1234567890)},
+			{int32(1234567890)},
 		},
 	},
 	{
@@ -981,7 +981,7 @@ var queries = []struct {
 	},
 	{
 		`SELECT -1`,
-		[]sql.Row{{int64(-1)}},
+		[]sql.Row{{int32(-1)}},
 	},
 	{
 		`
@@ -1043,13 +1043,13 @@ var queries = []struct {
 	{
 		`SELECT nullif(123, 321)`,
 		[]sql.Row{
-			{int64(123)},
+			{int32(123)},
 		},
 	},
 	{
 		`SELECT ifnull(123, NULL)`,
 		[]sql.Row{
-			{int64(123)},
+			{int32(123)},
 		},
 	},
 	{
@@ -1061,19 +1061,19 @@ var queries = []struct {
 	{
 		`SELECT ifnull(NULL, 123)`,
 		[]sql.Row{
-			{int64(123)},
+			{int32(123)},
 		},
 	},
 	{
 		`SELECT ifnull(123, 123)`,
 		[]sql.Row{
-			{int64(123)},
+			{int32(123)},
 		},
 	},
 	{
 		`SELECT ifnull(123, 321)`,
 		[]sql.Row{
-			{int64(123)},
+			{int32(123)},
 		},
 	},
 	{
@@ -1085,7 +1085,7 @@ var queries = []struct {
 	{
 		`SELECT round(15, 1)`,
 		[]sql.Row{
-			{int64(15)},
+			{int32(15)},
 		},
 	},
 	{
@@ -1452,7 +1452,7 @@ var queries = []struct {
 	},
 	{
 		`SELECT 1 FROM mytable GROUP BY i HAVING i > 1`,
-		[]sql.Row{{int64(1)}, {int64(1)}},
+		[]sql.Row{{int32(1)}, {int32(1)}},
 	},
 	{
 		`SELECT avg(i) FROM mytable GROUP BY i HAVING avg(i) > 1`,
@@ -1568,7 +1568,7 @@ func TestQueries(t *testing.T) {
 
 func TestSessionSelectLimit(t *testing.T) {
 	ctx := newCtx()
-	ctx.Session.Set("sql_select_limit", sql.Int64, int64(1))
+	ctx.Session.Set("sql_select_limit", sql.Int32, int32(1))
 
 	q := []struct {
 		query    string
@@ -2925,7 +2925,7 @@ func TestSessionVariables(t *testing.T) {
 	rows, err := sql.RowIterToRows(iter)
 	require.NoError(err)
 
-	require.Equal([]sql.Row{{int64(1), ",STRICT_TRANS_TABLES"}}, rows)
+	require.Equal([]sql.Row{{int32(1), ",STRICT_TRANS_TABLES"}}, rows)
 }
 
 func TestSessionVariablesONOFF(t *testing.T) {
@@ -2947,7 +2947,7 @@ func TestSessionVariablesONOFF(t *testing.T) {
 	rows, err := sql.RowIterToRows(iter)
 	require.NoError(err)
 
-	require.Equal([]sql.Row{{int64(1), int64(0), true}}, rows)
+	require.Equal([]sql.Row{{int32(1), int32(0), true}}, rows)
 }
 
 func TestNestedAliases(t *testing.T) {
