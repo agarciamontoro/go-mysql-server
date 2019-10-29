@@ -59,7 +59,7 @@ func (dv *SingleDropView) WithChildren(children ...sql.Node) (sql.Node, error) {
 	return dv, nil
 }
 
-// Database implements the Databaser interfacee. It returns the node's database.
+// Database implements the Databaser interface. It returns the node's database.
 func (dv *SingleDropView) Database() sql.Database {
 	return dv.database
 }
