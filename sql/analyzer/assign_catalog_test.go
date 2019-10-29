@@ -87,4 +87,10 @@ func TestAssignCatalog(t *testing.T) {
 	dv, ok := node.(*plan.DropView)
 	require.True(ok)
 	require.Equal(c, dv.Catalog)
+
+	node, err = f.Apply(sql.NewEmptyContext(), a, plan.NewShowTables(db, false))
+	require.NoError(err)
+	st, ok := node.(*plan.ShowTables)
+	require.True(ok)
+	require.Equal(c, st.Catalog)
 }

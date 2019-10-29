@@ -1,7 +1,7 @@
 package plan
 
 import (
-	"io"
+	"sort"
 	"testing"
 
 	"github.com/src-d/go-mysql-server/memory"
@@ -13,35 +13,58 @@ func TestShowTables(t *testing.T) {
 	require := require.New(t)
 	ctx := sql.NewEmptyContext()
 
+	catalog := sql.NewCatalog()
+
 	unresolvedShowTables := NewShowTables(sql.UnresolvedDatabase(""), false)
+	unresolvedShowTables.Catalog = catalog
 
 	require.False(unresolvedShowTables.Resolved())
 	require.Nil(unresolvedShowTables.Children())
 
-	db := memory.NewDatabase("test")
-	db.AddTable("test1", memory.NewTable("test1", nil))
-	db.AddTable("test2", memory.NewTable("test2", nil))
-	db.AddTable("test3", memory.NewTable("test3", nil))
+	tables := []string{"test1", "test2", "test3"}
+	views := []string{"view1", "view2"}
 
-	resolvedShowTables := NewShowTables(db, false)
+	db := memory.NewDatabase("test")
+	for _, table := range tables {
+		db.AddTable(table, memory.NewTable(table, nil))
+	}
+	for _, view := range views {
+		err := catalog.ViewRegistry.Register(db.Name(), sql.NewView(view, nil))
+		require.NoError(err)
+	}
+
+	resolvedShowTables := NewShowTables(db, true)
+	resolvedShowTables.Catalog = catalog
+
 	require.True(resolvedShowTables.Resolved())
 	require.Nil(resolvedShowTables.Children())
 
 	iter, err := resolvedShowTables.RowIter(ctx)
 	require.NoError(err)
 
-	res, err := iter.Next()
+	rows, err := sql.RowIterToRows(iter)
 	require.NoError(err)
-	require.Equal("test1", res[0])
 
-	res, err = iter.Next()
-	require.NoError(err)
-	require.Equal("test2", res[0])
+	var actualTables []string
+	var actualViews []string
+	for _, row := range rows {
+		name, ok := row[0].(string)
+		require.True(ok)
+		switch row[1] {
+		case "BASE TABLE":
+			actualTables = append(actualTables, name)
+		case "VIEW":
+			actualViews = append(actualViews, name)
+		default:
+			require.FailNow("only values 'BASE TABLE' and 'VIEW' are expected")
+		}
+	}
 
-	res, err = iter.Next()
-	require.NoError(err)
-	require.Equal("test3", res[0])
+	sort.Strings(tables)
+	sort.Strings(actualTables)
+	require.Equal(tables, actualTables)
 
-	_, err = iter.Next()
-	require.Equal(io.EOF, err)
+	sort.Strings(views)
+	sort.Strings(actualViews)
+	require.Equal(views, actualViews)
 }

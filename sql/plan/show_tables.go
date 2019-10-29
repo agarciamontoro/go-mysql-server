@@ -1,15 +1,14 @@
 package plan
 
 import (
-	"sort"
-
 	"github.com/src-d/go-mysql-server/sql"
 )
 
 // ShowTables is a node that shows the database tables.
 type ShowTables struct {
-	db   sql.Database
-	Full bool
+	db      sql.Database
+	Full    bool
+	Catalog *sql.Catalog
 }
 
 var showTablesSchema = sql.Schema{
@@ -24,8 +23,9 @@ var showTablesFullSchema = sql.Schema{
 // NewShowTables creates a new show tables node given a database.
 func NewShowTables(database sql.Database, full bool) *ShowTables {
 	return &ShowTables{
-		db:   database,
-		Full: full,
+		db:      database,
+		Full:    full,
+		Catalog: nil,
 	}
 }
 
@@ -70,15 +70,28 @@ func (p *ShowTables) RowIter(ctx *sql.Context) (sql.RowIter, error) {
 		tableNames = append(tableNames, key)
 	}
 
-	sort.Strings(tableNames)
+	views := p.Catalog.ViewRegistry.ViewsInDatabase(p.db.Name())
+	numViews := len(views)
+	viewNames := make([]string, numViews)
+	for i, view := range views {
+		viewNames[i] = view.Name()
+	}
 
-	var rows = make([]sql.Row, len(tableNames))
+	numTables := len(tableNames)
+	var rows = make([]sql.Row, numTables+numViews)
 	for i, n := range tableNames {
 		row := sql.Row{n}
 		if p.Full {
 			row = append(row, "BASE TABLE")
 		}
 		rows[i] = row
+	}
+	for i, n := range viewNames {
+		row := sql.Row{n}
+		if p.Full {
+			row = append(row, "VIEW")
+		}
+		rows[numTables+i] = row
 	}
 
 	return sql.RowsToRowIter(rows...), nil
